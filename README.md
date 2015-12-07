@@ -1,60 +1,46 @@
-# es6-module-starter
-[![npm version](https://badge.fury.io/js/es6-module-starter.svg)](http://badge.fury.io/js/es6-module-starter)
-[![travis build information](https://api.travis-ci.org/vinniegarcia/es6-module-starter.svg)](https://travis-ci.org/vinniegarcia/es6-module-starter)
-[![Coverage Status](https://coveralls.io/repos/vinniegarcia/es6-module-starter/badge.svg?branch=master)](https://coveralls.io/r/vinniegarcia/es6-module-starter?branch=master)
+# redux-addressbar
 
-Starter kit to create npm modules using ES6 and Babel with sensible defaults.
+[![npm version](https://badge.fury.io/js/redux-addressbar.svg)](http://badge.fury.io/js/redux-addressbar)
+[![travis build information](https://api.travis-ci.org/wmertens/redux-addressbar.svg)](https://travis-ci.org/wmertens/redux-addressbar)
+[![Coverage Status](https://coveralls.io/repos/wmertens/redux-addressbar/badge.svg?branch=master)](https://coveralls.io/r/wmertens/redux-addressbar?branch=master)
 
-## Why use this?
+Treat the address bar as just another input, and render your app only from Redux store state.
 
-Want to create an [npm](https://npmjs.com/) module with [ES6](http://es6rocks.com/)? Don't want to wait for full node support? Don't want to mess around with creating all those directories and setting up babel and npm scripts? Then this is for you.
+## Rationale
+
+A bound input has a set `value` and a change is cancelled and triggers `onChange()`. This handler then results in a new store state and a new (or the same) value. Likewise, a URL change is cancelled and converted to action. Then, the store state is converted to the address bar URL.
+
+Don't worry about transition hooks and special route link elements, or mapping params to store state in your components. Everything is just Redux.
+
+All you need to specify is a *location-to-action* function and a *state-to-location* function (`loc2action()`, `state2loc()`). All the code that knows about URLs is in these functions, and you are completely free in how a store state maps to a URL. You could do URLs that change according to the app language, compressed URLs that map several parameters to a short string etc.
+
+If are in a message pane and want to show the next message, simply increase your messageId via an action, like you are used to. The URL gets the new messageId via the store state, not via a special transition call.
+
+If you want to perform actions on route transitions (like preloading data), make `loc2action()` return a thunk (via `redux-thunk`) and do asynchronous actions etc as desired. Change the URL before and/or after the asynchronous code completes.
+
+To create an in-app URL, simply pass the target state to `state2loc()`.
+
+All links are automatically intercepted and handled via a click handler you put on your root component. This means that you can hard-code `<a href="/home">Home</a>` and it will be handled in-app and not by reloading the page.
+
+## TODO
+
+* fancy repo
+* server rendering
+* allow state2loc to go back instead of push, or maybe mark a location as temporary, to be backed out if next location is the parent location/always?
+* allow toAction to return false if not own url
+* toAction(location, isHistorical)
+* provider element that context and adds onClick to child??? won't work on HoCs => allow configuring div?
+* dev check recursion on settingUrl; toAction should never return null/undef
+* different history types?
 
 ## How to get started
 
-0. Install node and npm.
-1. Clone this repo: `git clone https://github.com/vinniegarcia/es6-module-starter.git my-module-name`
-2. Install dependencies: `npm i`
-3. Start hacking like it's 2015!
+TODO examples
 
-## Modules used/included
-
-- *babel* - compiles ES6 source to ES5. The `--experimental` flag is also enabled so you can use ES7 features.
-- *tape* and *argg* for simple, effective testing with less magic than mocha or jasmine.
-- *Istanbul* to report test coverage.
-- *eslint* and *babel-eslint* to analyze your code for stylistic issues.
-- *plato* to analyze the complexity of your source code.
-- *coveralls* to send your test results to coveralls.io.
-
-These are just defaults. Feel free to swap out eslint for jshint, or tape for mocha, or whatever you use for CI instead of coveralls.
-
-## Layout
-
-- `src/` - Your ES6 source code goes here. Files have a `.es6` extension for syntax highlighting in Sublime Text with [babel-sublime](https://github.com/babel/babel-sublime)
-- `src/tests/` - Your ES6 tests go here.
-- `src/.eslintrc` - ESLint configuration
-- `coverage/` - Code coverage reports are output here.
-- `dist/` - Your generated ES5 source is output here. This directory is under gitignore.
-- `.gitignore` - a sensible .gitignore file to prevent you from checking in generated source.
-- `.npmignore` - preconfigured to publish only the generated source code.
-- `package.json` - Customize this to publish your own module.
-- `.travis.yml` - Customize this if you use [Travis CI](https://travis-ci.org/) for builds.
-- `.coveralls.yml` - Customize this if you use [coveralls](https://coveralls.io/) for code coverage.
-- `README.md` - Delete all this and write your own.
-
-## npm scripts 
-
-These scripts are the main way to interact with your module as you develop it.
-
-- `compile` - run [babel](https://babeljs.io/) to compile your ES6 source to ES5. Output goes to the `dist/` directory.
-- `lint` - run [ESLint](http://eslint.org/) on your ES6 source and reports any style errors.
-- `tape` - test your code.
-- `coverage` - run [Istanbul](https://gotwarlost.github.io/istanbul/) on your code to report coverage. Reports output in HTML to the `coverage/istanbul` directory.
-- `istanbul` - run Istanbul, but output only lcov files for coveralls to read.
-- `coveralls` - run coveralls, using Istanbul's lcov report as input.
-- `plato` - run [plato](https://github.com/es-analysis/plato), a code analysis tool, on your generated source (plato doesn't support ES6 at the moment; as soon as it does I'll swap it to analyze ES6 source).
-- `test` - run tape, Istanbul, and coveralls.
-- `prepublish` - compiles your ES6 source to prepare for publishing to npm.
+0. `npm install --save redux-addressbar`
+1. Create `loc2action(location)` and `state2loc(state)`
+2. Put the click handler on your root DOM component
 
 ## Questions?
 
-File an [issue](https://github.com/vinniegarcia/es6-module-starter/issues) and I'll try to answer you.
+File an [issue](https://github.com/wmertens/redux-addressbar/issues) and I'll try to answer you.
