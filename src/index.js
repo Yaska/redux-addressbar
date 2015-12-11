@@ -108,7 +108,6 @@ class BoundUrl {
 		// store.dispatch(fromLoc(location))
 		const unlisten3 = store.subscribe(() => {
 			const calcLoc = toLoc(store.getState())
-			console.log("updateBar", calcLoc, store.getState().app)
 
 			const newLoc = {}
 			if (calcLoc.pathname) {
@@ -127,20 +126,18 @@ class BoundUrl {
 				newLoc.hash = this.currentLocation.hash
 			}
 
-			console.log("updateBar new", this.currentLocation, calcLoc, newLoc)
-			const newHref = newLoc.pathname + newLoc.search + newLoc.hash
 			const t = this.currentLocation
 			if (!this.settingUrl && (
 				t.pathname !== newLoc.pathname ||
 				t.search !== newLoc.search ||
 				t.hash !== newLoc.hash
 			)) {
-				console.log("updateBar do", JSON.stringify(this.currentLocation), ' > ', JSON.stringify(newLoc), newHref)
+				console.log("updateBar from", JSON.stringify(this.currentLocation), ' to ', JSON.stringify(newLoc))
 				this.settingUrl = true
 				if (calcLoc.replace || t.pathname === newLoc.pathname) {
-					history.replaceState({}, newHref)
+					history.replace(newLoc)
 				} else {
-					history.pushState({}, newHref)
+					history.push(newLoc)
 				}
 			}
 		})
@@ -150,7 +147,7 @@ class BoundUrl {
 
 		this.interceptClicks = event => {
 			const href = getClickedHref(event)
-			console.log(event, href)
+
 			if (href) {
 				event.preventDefault()
 				store.dispatch(fromLoc({pathname: href}))
