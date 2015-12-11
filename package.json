@@ -1,6 +1,6 @@
 {
   "name": "redux-addressbar",
-  "version": "0.1.0",
+  "version": "0.0.5",
   "description": "Treat the addressbar as a bound input, mapping it to Redux state",
   "main": "dist/index.js",
   "scripts": {
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vinniegarcia/es6-module-starter.git"
+    "url": "https://github.com/Yaska/redux-addressbar.git"
   },
   "keywords": [
     "redux",
@@ -30,8 +30,8 @@
     "argg": "0.0.2",
     "babel": "^5",
     "coveralls": "^2.11.4",
-    "eslint-config-xo": "^0.7.1",
-    "eslint-plugin-babel": "^2.1.1",
+    "eslint-config-xo": "^0.8.0",
+    "eslint-plugin-babel": "^3",
     "eslint-plugin-no-empty-blocks": "0.0.2",
     "istanbul": "^0.3.18",
     "plato": "^1.5.0",
@@ -39,7 +39,9 @@
     "xo": "^0.10.1"
   },
   "dependencies": {
-    "history": "^1.11.1"
+    "eslint-config-xo": "^0.8.0",
+    "eslint-plugin-babel": "^3.0.0",
+    "history": "^1.16.0"
   },
   "xo": {
     "esnext": true,
