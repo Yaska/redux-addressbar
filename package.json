@@ -3,6 +3,10 @@
   "version": "0.0.5",
   "description": "Treat the addressbar as a bound input, mapping it to Redux state",
   "main": "dist/index.js",
+  "files": [
+      "src",
+      "dist"
+  ],
   "scripts": {
     "dev": "babel-node src/index.js",
     "compile": "babel --stage 0 -d dist/ src/",
@@ -39,8 +43,6 @@
     "xo": "^0.10.1"
   },
   "dependencies": {
-    "eslint-config-xo": "^0.8.0",
-    "eslint-plugin-babel": "^3.0.0",
     "history": "^1.16.0"
   },
   "xo": {
