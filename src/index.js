@@ -15,7 +15,7 @@ import {createHistory} from 'history'
 	kinds of scenarios with hyperlinks, thanks!
 */
 
-const isSameOrigin = origin => {
+export const isSameOrigin = origin => {
 	let myOrigin = `${location.protocol}//${location.hostname}`
 	if (location.port) {
 		myOrigin += `:${location.port}`
@@ -23,14 +23,15 @@ const isSameOrigin = origin => {
 	return (origin === myOrigin)
 }
 
-const getClickedHref = event => {
+// Return the clicked URL, or false if we shouldn't handle it
+export const getClickedHref = event => {
 	// React already filters buttons so not checking for only-button-1
 
-	// check for modifiers
-	if (event.metaKey || event.ctrlKey || event.shiftKey) {
-		return false
-	}
-	if (event.defaultPrevented) {
+	// check for modifiers and preventDefault
+	if (
+		event.metaKey || event.ctrlKey || event.shiftKey ||
+		event.defaultPrevented
+	) {
 		return false
 	}
 
@@ -39,48 +40,44 @@ const getClickedHref = event => {
 	while (element && element.nodeName !== 'A') {
 		element = element.parentNode
 	}
-	if (!element || element.nodeName !== 'A') {
-		return false
-	}
 
 	// Ignore if tag has
+	// 0. is not a link
 	// 1. "download" attribute
 	// 2. rel="external" attribute
-	if (element.hasAttribute('download') || element.getAttribute('rel') === 'external') {
-		return false
-	}
-
-	// check target
-	if (element.target) {
-		return false
-	}
-
-	// x-origin
-	if (!isSameOrigin(element.origin)) {
+	// 3. "target" attribute
+	// 4. other target host
+	if (
+		!element ||
+		element.hasAttribute('download') ||
+		element.getAttribute('rel') === 'external' ||
+		element.target ||
+		!isSameOrigin(element.origin)
+	) {
 		return false
 	}
 
 	return element.href.slice(element.origin.length)
 }
 
-class BoundUrl {
+class BoundABar {
 
 	constructor(options) {
-		const {store, fromLoc, toLoc} = options
-		if (!store || !fromLoc || !toLoc) {
+		const {store, fromLocation, toLocation} = options
+		if (!store || !fromLocation || !toLocation) {
 			throw new Error("arguments")
 		}
-		const history = createHistory()
+		this.history = createHistory()
 
 		this.settingUrl = false
 		this.currentLocation = {}
 
 		// Listen for changes to the current location.
 		// The listener is called once immediately, use to initialize
-		const unlisten1 = history.listenBefore(location => {
+		this.unlistenBefore = history.listenBefore(location => {
 			console.log('listenBefore', location)
 			if (!this.settingUrl && location.action === 'PUSH') {
-				const action = fromLoc(location)
+				const action = fromLocation(location)
 				if (action !== false) {
 					store.dispatch(action)
 				}
@@ -91,13 +88,13 @@ class BoundUrl {
 		})
 
 		// Called on allowed changes and prev/next
-		const unlisten2 = history.listen(location => {
+		this.unlistenNav = history.listen(location => {
 			console.log('listen', location.pathname)
 			this.currentLocation = location
 			// Ignore expected updates that would mean duplicate data
 			if (!this.settingUrl && location.action === 'POP') {
 				// Moving through the browser history, pre-approved
-				const action = fromLoc(location)
+				const action = fromLocation(location)
 				if (action !== false) {
 					store.dispatch(action)
 				}
@@ -105,9 +102,9 @@ class BoundUrl {
 			this.settingUrl = false
 		})
 
-		// store.dispatch(fromLoc(location))
-		const unlisten3 = store.subscribe(() => {
-			const calcLoc = toLoc(store.getState())
+		// store.dispatch(fromLocation(location))
+		this.unlistenStore = store.subscribe(() => {
+			const calcLoc = toLocation(store.getState())
 
 			const newLoc = {}
 			if (calcLoc.pathname) {
@@ -134,6 +131,7 @@ class BoundUrl {
 			)) {
 				console.log("updateBar from", JSON.stringify(this.currentLocation), ' to ', JSON.stringify(newLoc))
 				this.settingUrl = true
+				// TODO This probably needs to check the hash sameness too, to allow in-page navigation
 				if (calcLoc.replace || t.pathname === newLoc.pathname) {
 					history.replace(newLoc)
 				} else {
@@ -141,26 +139,36 @@ class BoundUrl {
 				}
 			}
 		})
+	}
 
-		// Should this be an actionCreator?
-		this.go = n => history.go(n)
+	destroy() {
+		this.unlistenBefore()
+		this.unlistenNav()
+		this.unlistenStore()
+	}
 
-		this.interceptClicks = event => {
-			const href = getClickedHref(event)
+	// TODO Should this be an actionCreator?
+	go(n) {
+		return this.history.go(n)
+	}
 
-			if (href) {
-				event.preventDefault()
-				store.dispatch(fromLoc({pathname: href}))
-			}
-		}
-		this.cleanup = () => {
-			unlisten1()
-			unlisten2()
-			unlisten3()
+	handleClick(event) {
+		const href = getClickedHref(event)
+
+		if (href) {
+			event.preventDefault()
+			this.store.dispatch(this.fromLocation({pathname: href}))
 		}
 	}
 
 }
 
-export const makeBoundUrl = options => new BoundUrl(options)
-export default makeBoundUrl
+export const makeBoundABar = options => new BoundABar(options)
+
+export default options => {
+	const bar = makeBoundABar(options)
+	const handleClick = bar.handleClick.bind(bar)
+	handleClick.go = bar.go.bind(bar)
+	handleClick.destroy = bar.destroy.bind(bar)
+	return handleClick
+}
