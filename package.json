@@ -34,7 +34,7 @@
     "xo": "^0.16.0"
   },
   "dependencies": {
-    "history": "^1.16.0"
+    "history": "^3.0.0"
   },
   "babel": {
     "presets": [
