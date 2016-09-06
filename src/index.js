@@ -63,10 +63,11 @@ export const getClickedHref = event => {
 class BoundABar {
 
 	constructor(options) {
-		const {store, fromLocation, toLocation} = options
+		const {store, fromLocation, toLocation, logger} = options
 		if (!store || !fromLocation || !toLocation) {
 			throw new Error("arguments")
 		}
+		this.log = logger
 		this.history = createHistory()
 
 		this.settingUrl = false
@@ -75,7 +76,7 @@ class BoundABar {
 		// Listen for changes to the current location.
 		// The listener is called once immediately, use to initialize
 		this.unlistenBefore = history.listenBefore(location => {
-			console.log('listenBefore', location)
+			this.log && this.log('listenBefore', location)
 			if (!this.settingUrl && location.action === 'PUSH') {
 				const action = fromLocation(location)
 				if (action !== false) {
@@ -89,7 +90,7 @@ class BoundABar {
 
 		// Called on allowed changes and prev/next
 		this.unlistenNav = history.listen(location => {
-			console.log('listen', location.pathname)
+			this.log && this.log('listen', location.pathname)
 			this.currentLocation = location
 			// Ignore expected updates that would mean duplicate data
 			if (!this.settingUrl && location.action === 'POP') {
@@ -129,7 +130,7 @@ class BoundABar {
 				t.search !== newLoc.search ||
 				t.hash !== newLoc.hash
 			)) {
-				console.log("updateBar from", JSON.stringify(this.currentLocation), ' to ', JSON.stringify(newLoc))
+				this.log && this.log("updateBar from", JSON.stringify(this.currentLocation), ' to ', JSON.stringify(newLoc))
 				this.settingUrl = true
 				// TODO This probably needs to check the hash sameness too, to allow in-page navigation
 				if (calcLoc.replace || t.pathname === newLoc.pathname) {
