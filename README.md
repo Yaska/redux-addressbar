@@ -26,8 +26,6 @@ All links are automatically intercepted and handled via a click handler you put 
 
 ## TODO
 
-* Clear out console.logs
-* nicer API, use context and a provider? As a second option?
 * figure out what to do with hash navigation
 * fancy repo
 * server rendering
@@ -49,15 +47,48 @@ TODO examples for fromLocation and toLocation
 2. Put the click handler on your root DOM component
 	```jsx
 	import addressbar from 'redux-addressbar';
-	const handleClick = addressbar({ store, fromLoc, toLoc });
+	const handleClick = addressbar({ store, fromLocation, toLocation });
 	const App = (props) => (
 		<div onClick={handleClick}>
 			…
 		</div>
 	);
 	```
+	or [TODO]
+	```jsx
+	import {Provider} from 'react-redux';
+	import {ClickHandler} from 'redux-addressbar';
+	const App = ({store, toLocation, fromLocation}) => (
+		<Provider {...{store}}>
+			<ClickHandler {...{toLocation, fromLocation}}>
+				…
+			</ClickHandler>
+		</Provider>
+	);
+	```
+	Note that ClickHandler provides an onClick handler to its child, make sure it uses it. It also uses the store provided by Provider in context, which is an internal API. If you don't like that, you can provide it as a prop.
 3. If you need to destroy the handler (e.g. hot reload), you can call `handleClick.destroy()`
 4. If you need to navigate back in browser history, you can use `handleClick.go(n)` where n (optional) is the number of entries to go back
+
+## API
+
+### `addressbar({store, toLocation, fromLocation, logger})` (default export)
+
+creates history connection and returns the click handler for manual inclusion. Return value also gets `.go(n)` for going back in browser history and `.destroy()` for unregistering the listeners
+
+logger is an optional function that can be used for debugging, it is called like `console.log`.
+
+### `makeBoundABar({store, toLocation, fromLocation})`
+
+return object with go etc
+
+### `<ClickHandler {...{toLocation, fromLocation}}>` [TODO]
+### Link? Takes the root reducer, sends the action and sees what the resulting url is [TODO]
+like the other project
+requires root reducer or middleware
+### `@makeLink` puts `makeLink(action)` in props which returns a link given an action [TODO]
+### router [TODO]
+Something that takes `/foo/:bar` routes and makes toLocation/fromLocation
 
 ## Questions?
 
